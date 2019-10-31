@@ -1,0 +1,6 @@
+.env
+.vscode
+/vendor
+/.idea
+.phpunit.result.cache
+public/trace.log
