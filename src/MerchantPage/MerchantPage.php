@@ -98,4 +98,34 @@ class MerchantPage extends PaymentMethod
 
         return $params;
     }
+
+    /**
+     * check the transaction status
+     *
+     * @param array $params
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function checkTransactionStatus(array $params): array
+    {
+        $params = array_merge([
+            'query_command' => 'CHECK_STATUS',
+            'access_code' => $this->access_code,
+            'merchant_identifier' => $this->merchant_identifier,
+            'language' => $this->language,
+        ], $params);
+
+        // if signature is not already set
+        if (!$signature = Arr::get($params, 'signature')) {
+
+            // create the signature
+            $signature = $this->createSignature($params);
+
+            // add signature in the params
+            $params['signature'] = $signature;
+        }
+
+        return $this->callApi($params, true, 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi');
+    }
 }

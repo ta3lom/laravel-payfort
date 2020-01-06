@@ -252,11 +252,12 @@ abstract class PaymentMethod
      *
      * @param array $data
      * @param bool $is_json
+     * @param string $url
      *
      * @return mixed|string
      * @throws \Exception
      */
-    public function callApi(array $data, bool $is_json = true)
+    public function callApi(array $data, bool $is_json = true, string $url = null)
     {
         $content_type = $is_json ? 'json' : 'form_params';
         $payload = [
@@ -276,7 +277,10 @@ abstract class PaymentMethod
         ]);
 
         try {
-            $response = $client->post($this->gateway_url . '/FortAPI/paymentApi', $payload);
+            $url = $url ?? $this->gateway_url . '/FortAPI/paymentApi';
+
+            $response = $client->post($url, $payload);
+
         } catch (ClientException $exception) {
             throw new IncompletePayment($exception->getMessage(), $exception->getCode());
         }
