@@ -50,7 +50,7 @@ class MerchantPage extends PaymentMethod
         }
 
         // call api server to validate the data
-        return $this->callApi($params);
+        return $this->callApi($validator->validated());
     }
 
     /**
@@ -96,7 +96,7 @@ class MerchantPage extends PaymentMethod
             throw new ValidationException($validator);
         }
 
-        return $params;
+        return $validator->validated();
     }
 
     /**
@@ -126,6 +126,13 @@ class MerchantPage extends PaymentMethod
             $params['signature'] = $signature;
         }
 
-        return $this->callApi($params, true, 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi');
+        // get the validated data for authorization
+        $validator = Validator::make($params, ValidationRules::checkStatus());
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return $this->callApi($validator->validated(), true, 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi');
     }
 }

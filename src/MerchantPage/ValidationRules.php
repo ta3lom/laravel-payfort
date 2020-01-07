@@ -64,4 +64,18 @@ class ValidationRules extends BaseRules
             'return_url' => 'max:400',
         ];
     }
+
+    public static function checkStatus()
+    {
+        return [
+            'query_command' => 'required|in:CHECK_STATUS',
+            'access_code' => 'required|alpha_num|max:20',
+            'merchant_identifier' => 'required|alpha_num|max:20',
+            'merchant_reference' => 'required|string|max:40',
+            'language' => 'required|alpha|max:2',
+            'signature' => 'required|max:200',
+            'fort_id' => 'numeric|max:20',
+            'return_third_party_response_codes' => 'in:YES,NO',
+        ];
+    }
 }

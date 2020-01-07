@@ -38,6 +38,7 @@ class ValidationRules
         'tokenization' => 'TOKENIZATION',
         'authorization' => 'AUTHORIZATION',
         'purchase' => 'PURCHASE',
+        'check_status' => 'CHECK_STATUS',
     ];
 
     /**
