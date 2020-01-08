@@ -277,7 +277,7 @@ abstract class PaymentMethod
         ]);
 
         try {
-            $url = $url ?? $this->gateway_url . '/FortAPI/paymentApi';
+            $url = $url ?? $this->gateway_url . 'FortAPI/paymentApi';
 
             $response = $client->post($url, $payload);
 

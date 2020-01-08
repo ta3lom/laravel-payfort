@@ -133,6 +133,19 @@ class MerchantPage extends PaymentMethod
             throw new ValidationException($validator);
         }
 
-        return $this->callApi($validator->validated(), true, 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi');
+        return $this->callApi($validator->validated(), true, $this->getInquiryUrl());
+    }
+
+    /**
+     * get inquiry command url
+     *
+     * @return string
+     */
+    private function getInquiryUrl(): string
+    {
+        if ($this->is_sandbox) {
+            return 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi';
+        }
+        return 'https://paymentservices.payfort.com/FortAPI/paymentApi';
     }
 }

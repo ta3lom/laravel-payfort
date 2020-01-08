@@ -93,9 +93,9 @@ class MerchantPageTest extends TestCase
     }
 
     /** @test */
-    public function test_merchant_page_data()
+    public function test_prepare_tokenized_data()
     {
-        $input = $this->intent->prepareMerchantPageData([
+        $input = $this->intent->prepareTokenizationData([
             'service_command' => 'TOKENIZATION',
             'merchant_identifier' => $this->intent->merchant_identifier,
             'access_code' => $this->intent->access_code,

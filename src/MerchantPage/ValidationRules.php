@@ -21,6 +21,7 @@ class ValidationRules extends BaseRules
             'access_code' => 'required|alpha_num|max:20',
             'merchant_identifier' => 'required|alpha_num|max:20',
             'merchant_reference' => 'required|string|max:40',
+            'currency' => 'required|alpha|max:3',
             'language' => 'required|alpha|max:2',
             'signature' => 'required|max:200',
             'expiry_date' => 'numeric|max:4',

@@ -23,7 +23,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageAliases($app)
     {
         return [
-            'Payfort' => PayfortFacade::class
+            'Payfort' => PayfortFacade::class,
         ];
     }
 
