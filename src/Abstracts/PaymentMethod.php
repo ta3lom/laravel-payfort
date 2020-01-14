@@ -316,6 +316,8 @@ abstract class PaymentMethod
      * get the gateway url
      *
      * @return string
+     *
+     * @deprecated
      */
     public function getGatewayUrl(): string
     {

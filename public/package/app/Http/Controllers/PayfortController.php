@@ -13,16 +13,16 @@ use MoeenBasra\Payfort\PayfortFacade as Payfort;
 class PayfortController
 {
     /** @var  \MoeenBasra\Payfort\MerchantPage\MerchantPage */
-    protected $provider;
+    protected $intent;
 
     public function __construct()
     {
-        $this->provider = Payfort::configure(config('payfort'));
+        $this->intent = Payfort::configure(config('payfort'));
     }
 
     public function create()
     {
-        $response = $this->provider->prepareTokenizationData([
+        $response = $this->intent->prepareTokenizationData([
             'token_name' => Uuid::uuid4()->getHex(),
             'merchant_reference' => Uuid::uuid4()->getHex(),
             'return_url' => config('app.url') . '/payfort/tokenization',
@@ -30,7 +30,7 @@ class PayfortController
 
         return response()->json([
             'type' => 'form',
-            'url' => $this->provider->getClient()->getTokenizationUrl(),
+            'url' => $this->intent->getClient()->getTokenizationUrl(),
             'data' => $response,
         ]);
     }
@@ -41,7 +41,7 @@ class PayfortController
 
         Log::info('tokenization response received from payfort:' . PHP_EOL . print_r($input, 1));
 
-        $this->provider->verifyResponse($input);
+        $this->intent->verifyResponse($input);
 
         // create new payment object
         $payment = new Payment();
@@ -50,11 +50,11 @@ class PayfortController
         $payment->setCustomerToken(Arr::get($input, 'token_name'));
 
         // prepare payment data
-        $data = $this->provider->authorization([
+        $data = $this->intent->authorization([
             'command' => 'PURCHASE',
             'merchant_reference' => Uuid::uuid4()->getHex(),
             'token_name' => $payment->getCustomerToken(),
-            'amount' => $this->provider->convertAmountToPayfortFormat($payment->getAmount()),
+            'amount' => $this->intent->convertAmountToPayfortFormat($payment->getAmount()),
             'customer_email' => $payment->getCustomerEmail(),
             'customer_ip' => $payment->getCustomerIp(),
             'return_url' => config('app.url') . '/payfort/response',
@@ -73,7 +73,7 @@ class PayfortController
 
         Log::info('purchase response received from payfort:' . PHP_EOL . print_r($input, 1));
 
-        $this->provider->verifyResponse($input);
+        $this->intent->verifyResponse($input);
 
         return response()->json($input);
     }
@@ -84,7 +84,7 @@ class PayfortController
 
         Log::info('error received from payfort:' . PHP_EOL . print_r($input, 1));
 
-        $this->provider->verifyResponse($input);
+        $this->intent->verifyResponse($input);
 
         return response()->json($input);
     }
@@ -95,7 +95,7 @@ class PayfortController
 
         Log::info('callback received from payfort:' . PHP_EOL . print_r($input, 1));
 
-        $this->provider->verifyResponse($input);
+        $this->intent->verifyResponse($input);
 
         return response()->json($input);
     }
