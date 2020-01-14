@@ -3,7 +3,13 @@
 
 namespace Tests\Unit;
 
+use Exception;
 use Tests\TestCase;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
+use MoeenBasra\Payfort\Services\HttpClient;
+use Illuminate\Validation\ValidationException;
+use MoeenBasra\Payfort\PayfortFacade as Payfort;
 use MoeenBasra\Payfort\MerchantPage\MerchantPage;
 
 /**
@@ -15,81 +21,75 @@ use MoeenBasra\Payfort\MerchantPage\MerchantPage;
  */
 class MerchantPageTest extends TestCase
 {
-    /** @var MerchantPage */
-    protected $intent;
-
-    /** @test */
-    public function test_convert_amount_to_fort_format()
+    public function test_tokenization_process()
     {
-        $amount = $this->intent->convertAmountToPayfortFormat('100.002');
+        $content = $this->getContent('tokenization');
+        $mock = $this->mock(HttpClient::class);
 
-        $this->assertEquals(100002, $amount);
+        $mock->shouldReceive('createToken')
+            ->andReturn($content);
 
-    }
+        /** @var HttpClient $client */
+        $client = app(HttpClient::class);
 
-    /** @test */
-    public function test_revert_amount_fort_format()
-    {
-        $amount = $this->intent->revertAmountFromPayfortFormat(100002);
-
-        $this->assertEquals(100.002, $amount);
-    }
-
-    /** @test */
-    public function test_create_signature()
-    {
-        $input = $this->config;
-        $string = '';
-
-        // sort array with keys asc
-        ksort($input);
-
-        foreach ($input as $k => $v) {
-            $string .= "$k=$v";
-        }
-
-        // pre and post fix the string
-        $string = $this->intent->sha_request_phrase . $string . $this->intent->sha_request_phrase;
-
-        // create a hash for string
-        $hash = hash($this->config['encryption'], $string);
-
-        // create signature
-        $signature = $this->intent->createSignature($this->config);
-
-        $this->assertEquals($hash, $signature);
-    }
-
-    public function test_response()
-    {
-        $data = [
-            'amount' => '20000',
-            'response_code' => '02000',
-            'card_number' => '531358******3430',
+        $data = $this->intent->prepareTokenizationData([
+            'merchant_reference' => Arr::get($content, 'merchant_reference'),
+            'token_name' => Arr::get($content, 'token_name'),
             'card_holder_name' => 'Moeen',
-            'signature' => 'cf5e2bea49a4a7a8e59fd6f22039854e031e7c61f26ad7e6b01ed17cde5bb348',
-            'merchant_identifier' => $this->intent->merchant_identifier,
-            'access_code' => $this->intent->access_code,
-            'payment_option' => 'MASTERCARD',
+            'card_number' => '4557012345678902',
+            'card_security_code' => '123',
             'expiry_date' => '2105',
-            'customer_ip' => '::1',
-            'language' => 'en',
-            'eci' => 'ECOMMERCE',
-            'fort_id' => '157021813100093129',
-            'command' => 'AUTHORIZATION',
-            'response_message' => 'Success',
-            'merchant_reference' => '2089355639',
-            'authorization_code' => '959903',
-            'customer_email' => 'test@payfort.com',
-            'token_name' => 'ajar-pay-1570218127',
-            'currency' => 'KWD',
-            'customer_name' => 'Moeen Basra',
-            'status' => '02',
-        ];
+            'return_url' => 'https://localhost:8088/authorization_response.php',
+        ]);
 
-        $response = $this->intent->verifyResponse($data);
+        $response = $client->createToken($data);
 
-        $this->assertNull($response);
+        $this->assertEquals($response, $content);
+    }
+
+    public function test_authorization_process()
+    {
+        $content = $this->getContent('authorization');
+        $mock = $this->mock(HttpClient::class);
+
+        $mock->shouldReceive('authorizeTransaction')
+            ->andReturn($content);
+
+        /** @var HttpClient $client */
+        $client = app(HttpClient::class);
+
+        $response = $client->authorizeTransaction([
+            'merchant_reference' => Arr::get($content, 'merchant_reference'),
+            'token_name' => Arr::get($content, 'token_name'),
+            'amount' => '30000',
+            'customer_email' => 'example@example.net',
+            'customer_ip' => '127.0.0.1',
+        ]);
+
+        $this->assertEquals($response, $content);
+    }
+
+    public function test_check_status_process()
+    {
+        $content = $this->getContent('check_status');
+
+        $mock = $this->mock(HttpClient::class);
+
+        $mock->shouldReceive('authorizeTransaction')
+            ->andReturn($content);
+
+        /** @var HttpClient $client */
+        $client = app(HttpClient::class);
+
+        $response = $client->checkStatus([
+            'merchant_reference' => Arr::get($content, 'merchant_reference'),
+            'token_name' => Arr::get($content, 'token_name'),
+            'amount' => '30000',
+            'customer_email' => 'example@example.net',
+            'customer_ip' => '127.0.0.1',
+        ]);
+
+        $this->assertEquals($response, $content);
     }
 
     /** @test */
@@ -102,7 +102,7 @@ class MerchantPageTest extends TestCase
             'language' => $this->intent->language,
             'merchant_reference' => (string)rand(0, getrandmax()),
             'token_name' => 'ajar-pay-' . time(),
-            'return_url' => 'https://71048e0e.ngrok.io/authorization_response.php',
+            'return_url' => 'https://localhost:8088/authorization_response.php',
         ]);
 
         $this->assertArrayHasKey('service_command', $input);
@@ -115,14 +115,42 @@ class MerchantPageTest extends TestCase
         $this->assertArrayHasKey('signature', $input);
     }
 
+    public function test_tokenization_validation()
+    {
+        try {
+            $this->intent->prepareTokenizationData([
+                'service_command' => null,
+                'merchant_identifier' => null,
+                'access_code' => null,
+                'language' => null,
+                'merchant_reference' => null,
+                'token_name' => null,
+                'return_url' => null,
+            ]);
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('service_command', $e->errors());
+            $this->assertArrayHasKey('merchant_identifier', $e->errors());
+            $this->assertArrayHasKey('access_code', $e->errors());
+            $this->assertArrayHasKey('language', $e->errors());
+            $this->assertArrayHasKey('merchant_reference', $e->errors());
+        }
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->intent = $this->app->make('payfort')->configure(
+        $this->intent = Payfort::configure(
             array_merge(config('payfort'), [
                 'payment_method' => 'merchant_page_2',
             ])
         );
+    }
+
+    private function getContent(string $key)
+    {
+        $json = json_decode(File::get(__DIR__ . '/stubs/responses.json'), true);
+
+        return $json[$key];
     }
 }

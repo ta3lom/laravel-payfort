@@ -17,16 +17,16 @@ class ValidationRules extends BaseRules
     public static function tokenization()
     {
         return [
-            'service_command' => 'required|in:' . implode(',', self::$available_commands),
+            'service_command' => 'required|in:' . implode(',', self::$service_commands),
             'access_code' => 'required|alpha_num|max:20',
             'merchant_identifier' => 'required|alpha_num|max:20',
             'merchant_reference' => 'required|string|max:40',
             'currency' => 'required|alpha|max:3',
             'language' => 'required|alpha|max:2',
             'signature' => 'required|max:200',
-            'expiry_date' => 'numeric|max:4',
-            'card_number' => 'numeric|max:19',
-            'card_security_code' => 'numeric|max:3',
+            'expiry_date' => 'digits:4',
+            'card_number' => 'digits_between:16,19',
+            'card_security_code' => 'digits_between:3,4',
             'card_holder_name' => 'string|max:50',
             'token_name' => 'max:100',
             'remember_me' => 'in:YES,NO|max:3',
@@ -37,7 +37,7 @@ class ValidationRules extends BaseRules
     public static function authorization()
     {
         return [
-            'command' => 'required|in:' . implode(',', self::$available_commands),
+            'command' => 'required|in:' . implode(',', self::$commands),
             'access_code' => 'required|alpha_num|max:20',
             'merchant_identifier' => 'required|alpha_num|max:20',
             'merchant_reference' => 'required|string|max:40',
@@ -48,10 +48,10 @@ class ValidationRules extends BaseRules
             'customer_ip' => 'required|ip',
             'token_name' => 'required|max:100',
             'signature' => 'required|max:200',
-            'payment_option' => 'in:' . implode(',', self::$available_payment_options),
+            'payment_option' => 'in:' . implode(',', self::$payment_options),
             'eci' => 'in:' . implode(',', self::$avaiable_eci),
             'order_description' => 'max:150',
-            'card_security_code' => 'numeric|max:4',
+            'card_security_code' => 'digits_between:3,4',
             'customer_name' => 'string|max:40',
             'merchant_extra' => 'string|max:999',
             'merchant_extra1' => 'string|max:250',
@@ -69,13 +69,13 @@ class ValidationRules extends BaseRules
     public static function checkStatus()
     {
         return [
-            'query_command' => 'required|in:CHECK_STATUS',
+            'query_command' => 'required|in:' . implode(',', self::$query_commands),
             'access_code' => 'required|alpha_num|max:20',
             'merchant_identifier' => 'required|alpha_num|max:20',
             'merchant_reference' => 'required|string|max:40',
             'language' => 'required|alpha|max:2',
             'signature' => 'required|max:200',
-            'fort_id' => 'numeric|max:20',
+            'fort_id' => 'digits_between:10,20',
             'return_third_party_response_codes' => 'in:YES,NO',
         ];
     }

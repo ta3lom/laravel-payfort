@@ -22,6 +22,7 @@ class MerchantPage extends PaymentMethod
      *
      * @return array
      * @throws \Illuminate\Validation\ValidationException
+     * @throws \MoeenBasra\Payfort\Exceptions\IncompletePayment
      */
     public function authorization(array $params): array
     {
@@ -49,8 +50,7 @@ class MerchantPage extends PaymentMethod
             throw new ValidationException($validator);
         }
 
-        // call api server to validate the data
-        return $this->callApi($validator->validated());
+        return $this->client->authorizeTransaction($validator->validated());
     }
 
     /**
@@ -78,7 +78,7 @@ class MerchantPage extends PaymentMethod
             $signature = $this->createSignature(
                 Arr::except($params, [
                     'card_security_code',
-                    'card number',
+                    'card_number',
                     'expiry_date',
                     'card_holder_name',
                     'remember_me',
@@ -133,13 +133,15 @@ class MerchantPage extends PaymentMethod
             throw new ValidationException($validator);
         }
 
-        return $this->callApi($validator->validated(), true, $this->getInquiryUrl());
+        return $this->client->checkStatus($validator->validated());
     }
 
     /**
      * get inquiry command url
      *
      * @return string
+     *
+     * @deprecated
      */
     private function getInquiryUrl(): string
     {
