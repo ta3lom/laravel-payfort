@@ -154,7 +154,7 @@ class HttpClient
     public function getTokenizationUrl(): string
     {
         return $this->is_sandbox
-            ? 'https://sbcheckout.payfort.com/FortAPI/paymentApi'
+            ? 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
             : 'https://checkout.PayFort.com/FortAPI/paymentPage';
     }
 
