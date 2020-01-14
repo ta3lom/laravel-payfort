@@ -2,7 +2,6 @@
   "name": "moeen-basra/laravel-payfort",
   "description": "Laravel package for Payfort payment gateway",
   "type": "library",
-  "version": "0.1",
   "require": {
     "php": "^7.2",
     "moneyphp/money": "^3.2",
