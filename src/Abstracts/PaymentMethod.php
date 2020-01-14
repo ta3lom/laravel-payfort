@@ -14,6 +14,7 @@ use MoeenBasra\Payfort\ValidationRules;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Validator;
 use Money\Formatter\DecimalMoneyFormatter;
+use MoeenBasra\Payfort\Services\HttpClient;
 use Illuminate\Validation\ValidationException;
 use MoeenBasra\Payfort\Exceptions\PayfortException;
 use MoeenBasra\Payfort\Exceptions\IncompletePayment;
@@ -90,6 +91,8 @@ abstract class PaymentMethod
      * the gateway host path
      *
      * @var string
+     *
+     * @deprecated
      */
     public $gateway_url;
 
@@ -99,6 +102,11 @@ abstract class PaymentMethod
      * @var array
      */
     protected $config = [];
+
+    /**
+     * @var HttpClient
+     */
+    protected $client;
 
     /**
      * get the validation rules
@@ -134,6 +142,8 @@ abstract class PaymentMethod
      * configure the Payfort payment_method
      *
      * @param array $config
+     *
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function configure(array $config = [])
     {
@@ -151,6 +161,10 @@ abstract class PaymentMethod
         $this->currency = strtoupper(Arr::get($this->config, 'currency'));
         $this->is_sandbox = Arr::get($this->config, 'is_sandbox', true);
         $this->gateway_url = $this->getGatewayUrl();
+
+        if (null === $this->client) {
+            $this->client = $this->getClient();
+        }
     }
 
     /**
@@ -256,6 +270,8 @@ abstract class PaymentMethod
      *
      * @return mixed|string
      * @throws \Exception
+     *
+     * @deprecated
      */
     public function callApi(array $data, bool $is_json = true, string $url = null)
     {
@@ -297,6 +313,29 @@ abstract class PaymentMethod
     }
 
     /**
+     * get the gateway url
+     *
+     * @return string
+     *
+     * @deprecated
+     */
+    public function getGatewayUrl(): string
+    {
+        if ($this->is_sandbox) {
+            return 'https://sbcheckout.payfort.com/';
+        }
+        return 'https://checkout.payfort.com/';
+    }
+
+    /**
+     * @return \MoeenBasra\Payfort\Services\HttpClient
+     */
+    public function getClient(): HttpClient
+    {
+        return app(HttpClient::class, ['is_sandbox' => $this->is_sandbox]);
+    }
+
+    /**
      * validate configuration
      *
      * @param array $config
@@ -310,18 +349,5 @@ abstract class PaymentMethod
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
-    }
-
-    /**
-     * get the gateway url
-     *
-     * @return string
-     */
-    public function getGatewayUrl(): string
-    {
-        if ($this->is_sandbox) {
-            return 'https://sbcheckout.payfort.com/';
-        }
-        return 'https://checkout.payfort.com/';
     }
 }

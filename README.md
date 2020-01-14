@@ -18,3 +18,5 @@ php artisan vendor:publish --tag=payfort-config
 ```
 
 update the `payfort` configuration file under config directory.
+
+To check the implementation take the stubs from `public/package` folder and put these in project's appropriate folders.

@@ -10,7 +10,7 @@ class ValidationRules
      *
      * @var array
      */
-    public static $available_payment_options = [
+    public static $payment_options = [
         'MASTERCARD',
         'VISA',
         'AMEX',
@@ -34,11 +34,33 @@ class ValidationRules
      *
      * @var array
      */
-    public static $available_commands = [
-        'tokenization' => 'TOKENIZATION',
+    public static $commands = [
         'authorization' => 'AUTHORIZATION',
         'purchase' => 'PURCHASE',
-        'check_status' => 'CHECK_STATUS',
+    ];
+
+    public static $service_commands = [
+        'TOKENIZATION',
+        'SDK_TOKEN',
+        'GET_BATCH_RESULTS',
+        'VERIFY_CARD',
+        'PROCESS_BATCH',
+        'UPLOAD_BATCH_FILE',
+        'CURRENCY_CONVERSION',
+        'CREATE_TOKEN',
+        'BILL_PRESENTMENT',
+        'PAYMENT_LINK',
+    ];
+
+    public static $query_commands = [
+        'CHECK_VERIFY_CARD_STATUS',
+        'GENERATE_REPORT',
+        'CHECK_STATUS',
+        'GET_TOKENS',
+        'DOWNLOAD_REPORT',
+        'GET_REPORT',
+        'GET_INSTALLMENTS_PLANS',
+
     ];
 
     /**

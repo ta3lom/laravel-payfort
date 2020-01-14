@@ -13,6 +13,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected $config;
 
+    /**
+     * @var \MoeenBasra\Payfort\Abstracts\PaymentMethod
+     */
     protected $intent;
 
     protected function getPackageProviders($app)
