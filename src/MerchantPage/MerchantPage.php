@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use MoeenBasra\Payfort\Abstracts\PaymentMethod;
+use MoeenBasra\Payfort\Exceptions\IncompletePayment;
 
 class MerchantPage extends PaymentMethod
 {
@@ -100,14 +101,16 @@ class MerchantPage extends PaymentMethod
     }
 
     /**
-     * check the transaction status
+     * query the transaction to check status
      *
      * @param array $params
      *
      * @return array
-     * @throws \Exception
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \MoeenBasra\Payfort\Exceptions\IncompletePayment
+     * @throws \MoeenBasra\Payfort\Exceptions\PayfortException
      */
-    public function checkTransactionStatus(array $params): array
+    public function checkStatus(array $params): array
     {
         $params = array_merge([
             'query_command' => 'CHECK_STATUS',
@@ -133,7 +136,36 @@ class MerchantPage extends PaymentMethod
             throw new ValidationException($validator);
         }
 
-        return $this->client->checkStatus($validator->validated());
+        $response = $this->client->checkStatus($validator->validated());
+
+        $this->verifyResponse($response);
+
+        return $response;
+    }
+
+    /**
+     * check the transaction status
+     *
+     * @param array $params
+     *
+     * @return array
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \MoeenBasra\Payfort\Exceptions\IncompletePayment
+     * @throws \MoeenBasra\Payfort\Exceptions\PayfortException
+     */
+    public function checkTransactionStatus(array $params): array
+    {
+        $response = $this->checkStatus($params);
+
+        $status = Arr::get($response, 'transaction_status');
+
+        if ($status && !in_array($status, ['04', '14'])) {
+            $message = Arr::get($response, 'transaction_message', 'Unknown transaction status');
+
+            throw new IncompletePayment($message);
+        }
+
+        return $response;
     }
 
     /**
