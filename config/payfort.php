@@ -27,7 +27,7 @@ return [
     | Example: zx0IPmPy5jp1vAz8Kpg7
     |
     */
-    'access_code' => env('PAYFORT_ACCESS_CODE'),
+    'access_code' => env('PAYFORT_ACCESS_CODE', 'nzgQBkXBmDfGIoDKDI8V'),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,7 +38,7 @@ return [
     | application on the Payfort
     |
     */
-    'merchant_identifier' => env('PAYFORT_MERCHANT_IDENTIFIER'),
+    'merchant_identifier' => env('PAYFORT_MERCHANT_IDENTIFIER', 'FudxRueQ'),
 
     /*
     |--------------------------------------------------------------------------
@@ -49,7 +49,7 @@ return [
     | your application is making to the Payfort
     |
     */
-    'sha_request_phrase' => env('PAYFORT_SHA_REQUEST_PHRASE'),
+    'sha_request_phrase' => env('PAYFORT_SHA_REQUEST_PHRASE', 'TESTSHAIN'),
 
     /*
     |--------------------------------------------------------------------------
@@ -60,7 +60,7 @@ return [
     | coming to you application from the Payfort
     |
     */
-    'sha_response_phrase' => env('PAYFORT_RESPONSE_PHRASE'),
+    'sha_response_phrase' => env('PAYFORT_RESPONSE_PHRASE', 'TESTSHAOUT'),
 
     /*
     |--------------------------------------------------------------------------
